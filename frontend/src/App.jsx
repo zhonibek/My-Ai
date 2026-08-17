@@ -19,6 +19,8 @@ export default function App() {
   const [activeChatId, setActiveChatId] = useState(null);
   const [selectedModel, setSelectedModel] = useState('aether-neural-local');
   const [enableWebSearch, setEnableWebSearch] = useState(true);
+  const [enableDeepResearch, setEnableDeepResearch] = useState(false);
+  const [enableSelfCorrection, setEnableSelfCorrection] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('chats');
   const [chatMessages, setChatMessages] = useState({});
@@ -235,6 +237,8 @@ export default function App() {
           messages: updatedHistory.map(m => ({ role: m.sender, content: m.content })),
           model: selectedModel,
           enable_web_search: enableWebSearch,
+          enable_deep_research: enableDeepResearch,
+          enable_self_correction: enableSelfCorrection,
           file_ids: attachedFiles.map(f => f.id)
         })
       });
@@ -346,6 +350,10 @@ export default function App() {
           onSelectModel={setSelectedModel}
           enableWebSearch={enableWebSearch}
           onToggleWebSearch={() => setEnableWebSearch(!enableWebSearch)}
+          enableDeepResearch={enableDeepResearch}
+          onToggleDeepResearch={() => setEnableDeepResearch(!enableDeepResearch)}
+          enableSelfCorrection={enableSelfCorrection}
+          onToggleSelfCorrection={() => setEnableSelfCorrection(!enableSelfCorrection)}
         />
 
         {/* Conversation Scroll Area */}

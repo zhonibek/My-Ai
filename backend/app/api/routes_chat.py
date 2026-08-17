@@ -15,6 +15,8 @@ class ChatRequest(BaseModel):
     messages: List[ChatMessage]
     model: str = Field("aether-neural-local", description="Target model ID or 'auto'")
     enable_web_search: bool = True
+    enable_deep_research: bool = False
+    enable_self_correction: bool = True
     file_ids: List[str] = Field(default_factory=list)
     user_id: str = "default_user"
     temperature: float = 0.7
@@ -52,6 +54,8 @@ async def chat_stream_endpoint(request: ChatRequest):
                 model=request.model,
                 file_ids=request.file_ids,
                 enable_web_search=request.enable_web_search,
+                enable_deep_research=request.enable_deep_research,
+                enable_self_correction=request.enable_self_correction,
                 user_id=request.user_id,
                 rag_context=rag_context_text
             ):

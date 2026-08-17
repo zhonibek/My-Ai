@@ -11,6 +11,8 @@ from app.api.routes_files import router as files_router
 from app.api.routes_models import router as models_router
 from app.api.routes_training import router as training_router
 from app.api.routes_history import router as history_router
+from app.api.routes_voice import router as voice_router
+from app.api.routes_vision import router as vision_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -33,6 +35,8 @@ app.include_router(files_router, prefix=settings.API_V1_STR)
 app.include_router(models_router, prefix=settings.API_V1_STR)
 app.include_router(training_router, prefix=settings.API_V1_STR)
 app.include_router(history_router, prefix=settings.API_V1_STR)
+app.include_router(voice_router, prefix=settings.API_V1_STR)
+app.include_router(vision_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root_status():

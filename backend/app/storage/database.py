@@ -45,7 +45,50 @@ class ChatDatabase:
                     FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE
                 )
             """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_memories (
+                    id TEXT PRIMARY KEY,
+                    user_id TEXT DEFAULT 'default_user',
+                    category TEXT NOT NULL,
+                    fact TEXT NOT NULL,
+                    embedding TEXT,
+                    confidence REAL DEFAULT 1.0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
             conn.commit()
+
+    def save_memory_fact(self, fact_id: str, category: str, fact: str, embedding_list: List[float], user_id: str = "default_user"):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            emb_json = json.dumps(embedding_list)
+            cursor.execute("""
+                INSERT OR REPLACE INTO user_memories (id, user_id, category, fact, embedding)
+                VALUES (?, ?, ?, ?, ?)
+            """, (fact_id, user_id, category, fact, emb_json))
+            conn.commit()
+
+    def get_all_memories(self, user_id: str = "default_user") -> List[Dict[str, Any]]:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM user_memories WHERE user_id = ? ORDER BY created_at DESC", (user_id,))
+            rows = cursor.fetchall()
+            memories = []
+            for r in rows:
+                emb = []
+                try:
+                    if r["embedding"]:
+                        emb = json.loads(r["embedding"])
+                except Exception:
+                    pass
+                memories.append({
+                    "id": r["id"],
+                    "category": r["category"],
+                    "fact": r["fact"],
+                    "embedding": emb,
+                    "created_at": r["created_at"]
+                })
+            return memories
 
     def list_conversations(self) -> List[Dict[str, Any]]:
         with self.get_connection() as conn:
