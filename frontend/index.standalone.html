@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AETHER AI | Next-Gen AI Operating Layer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-input {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 99px; }
+    .prose-custom p { margin-bottom: 0.5rem; }
+    .prose-custom table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; }
+    .prose-custom th, .prose-custom td { border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.4rem 0.6rem; }
+    .prose-custom th { background: rgba(30, 41, 59, 0.8); }
+    .prose-custom code:not(pre code) { background: rgba(51, 65, 85, 0.6); padding: 0.1rem 0.3rem; border-radius: 4px; color: #38bdf8; font-family: monospace; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans h-screen flex overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-72 glass-panel border-r border-slate-800 flex flex-col">
+    <div class="p-4 border-b border-slate-800 flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+        <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <h1 className="font-bold font-outfit text-white text-base">AETHER AI</h1>
+        <p className="text-[11px] text-slate-400">AI Operating Layer</p>
+      </div>
+    </div>
+    <div class="p-3">
+      <button onclick="createNewChat()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-sm flex items-center justify-center space-x-2 shadow-lg shadow-cyan-500/20">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        <span>New Conversation</span>
+      </button>
+    </div>
+    <div id="chats-list" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
+    <div class="p-3 border-t border-slate-800 text-xs text-slate-400 flex justify-between">
+      <span>Model Gateway</span>
+      <span class="text-emerald-400 font-mono">ONLINE</span>
+    </div>
+  </aside>
+
+  <!-- Main Chat Container -->
+  <main class="flex-1 flex flex-col h-full relative">
+    <!-- Header -->
+    <header class="h-16 px-6 glass-panel border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <i data-lucide="bot" class="w-5 h-5 text-cyan-400"></i>
+        <select id="model-select" class="bg-slate-900 border border-slate-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl focus:outline-none">
+          <option value="auto">Auto Router (Smart Select)</option>
+          <option value="gpt-4o">GPT-4o (OpenAI)</option>
+          <option value="gpt-4o-mini">GPT-4o Mini (OpenAI)</option>
+          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Anthropic)</option>
+          <option value="gemini-1-5-pro">Gemini 1.5 Pro (Google)</option>
+          <option value="deepseek-r1-local">DeepSeek R1 (Self-Hosted GPU)</option>
+        </select>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="web-toggle" onclick="toggleWebSearch()" class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 text-xs font-medium">
+          <i data-lucide="globe" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>Web Search</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Chat Messages -->
+    <div id="messages-container" class="flex-1 overflow-y-auto divide-y divide-slate-800/40"></div>
+
+    <!-- Chat Input -->
+    <div class="p-4 glass-panel border-t border-slate-800">
+      <form onsubmit="handleSend(event)" class="max-w-4xl mx-auto space-y-2">
+        <div id="file-chips" class="flex flex-wrap gap-2"></div>
+        <div class="glass-input rounded-2xl p-2 flex items-center space-x-2">
+          <input type="file" id="file-input" class="hidden" onchange="handleFileUpload(event)">
+          <button type="button" onclick="document.getElementById('file-input').click()" class="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-cyan-400">
+            <i data-lucide="paperclip" class="w-4 h-4"></i>
+          </button>
+          <textarea id="chat-input" rows="1" placeholder="Ask anything or request a comparison..." class="flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none px-2"></textarea>
+          <button type="submit" class="p-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg">
+            <i data-lucide="send" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    let activeChatId = 'chat_1';
+    let webSearchEnabled = true;
+    let attachedFiles = [];
+    let conversations = [{ id: 'chat_1', title: 'MacBook M3 Price Comparison' }];
+    let messages = {
+      chat_1: [
+        {
+          sender: 'assistant',
+          content: 'Hello! I am your **Universal AI Assistant** powered by a provider-agnostic **AI Operating Layer**.\n\nI route prompts across **GPT-4o, Claude 3.5 Sonnet, Gemini 1.5 Pro, and DeepSeek R1**, execute live web searches, and perform document RAG.',
+          model: 'AI Router Engine',
+          sources: []
+        }
+      ]
+    };
+
+    function init() {
+      lucide.createIcons();
+      renderSidebar();
+      renderMessages();
+    }
+
+    function renderSidebar() {
+      const list = document.getElementById('chats-list');
+      list.innerHTML = conversations.map(c => `
+        <div onclick="selectChat('${c.id}')" class="px-3 py-2 rounded-xl text-xs flex items-center justify-between cursor-pointer ${c.id === activeChatId ? 'bg-slate-800 text-white border border-cyan-500/30' : 'text-slate-400 hover:bg-slate-800/40'}">
+          <span class="truncate">${c.title}</span>
+        </div>
+      `).join('');
+    }
+
+    function selectChat(id) {
+      activeChatId = id;
+      renderSidebar();
+      renderMessages();
+    }
+
+    function createNewChat() {
+      const id = 'chat_' + Date.now();
+      conversations.unshift({ id, title: 'New Conversation' });
+      messages[id] = [{ sender: 'assistant', content: 'Started new conversation.', model: 'AI Router' }];
+      activeChatId = id;
+      renderSidebar();
+      renderMessages();
+    }
+
+    function toggleWebSearch() {
+      webSearchEnabled = !webSearchEnabled;
+      const btn = document.getElementById('web-toggle');
+      btn.className = webSearchEnabled 
+        ? 'flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 text-xs font-medium'
+        : 'flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 text-xs';
+    }
+
+    function renderMessages() {
+      const container = document.getElementById('messages-container');
+      const chatMsgs = messages[activeChatId] || [];
+      container.innerHTML = chatMsgs.map(m => {
+        let parsedText = marked.parse(m.content);
+        return `
+          <div class="py-4 px-6 flex space-x-4 ${m.sender === 'assistant' ? 'bg-slate-900/30' : ''}">
+            <div class="w-8 h-8 rounded-xl ${m.sender === 'assistant' ? 'bg-gradient-to-tr from-cyan-500 to-indigo-600' : 'bg-slate-800'} flex items-center justify-center text-white shrink-0">
+              <i data-lucide="${m.sender === 'assistant' ? 'bot' : 'user'}" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1 space-y-1">
+              <div class="text-xs text-slate-400 font-medium">${m.sender === 'assistant' ? 'AETHER AI' : 'You'} ${m.model ? `<span class="text-[10px] text-cyan-400 font-mono ml-2">[${m.model}]</span>` : ''}</div>
+              <div class="prose-custom text-sm text-slate-200">${parsedText}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function handleSend(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text && attachedFiles.length === 0) return;
+
+      messages[activeChatId].push({ sender: 'user', content: text });
+      input.value = '';
+      renderMessages();
+
+      const astMsg = { sender: 'assistant', content: 'Analyzing prompt via AI Orchestrator...\n\n', model: document.getElementById('model-select').value };
+      messages[activeChatId].push(astMsg);
+      renderMessages();
+
+      try {
+        const res = await fetch('/api/v1/chat/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: messages[activeChatId].slice(0, -1).map(m => ({ role: m.sender, content: m.content })),
+            model: document.getElementById('model-select').value,
+            enable_web_search: webSearchEnabled,
+            file_ids: attachedFiles.map(f => f.id)
+          })
+        });
+
+        if (res.ok && res.body) {
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let fullText = '';
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            const lines = decoder.decode(value).split('\n\n');
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (data.event_type === 'token') {
+                    fullText += data.delta;
+                    astMsg.content = fullText;
+                    renderMessages();
+                  }
+                } catch(err) {}
+              }
+            }
+          }
+          return;
+        }
+      } catch (err) {}
+
+      // Fallback response simulation if connecting
+      astMsg.content = "Here is the response from the **Model Router Engine**:\n\n- Model: **" + document.getElementById('model-select').value + "**\n- Web Search: **" + (webSearchEnabled ? "Active" : "Disabled") + "**\n\n$$\\int_0^1 x^2 dx = \\frac{1}{3}$$";
+      renderMessages();
+    }
+
+    function handleFileUpload(e) {
+      const files = Array.from(e.target.files);
+      files.forEach(f => {
+        attachedFiles.push({ id: 'file_' + Date.now(), name: f.name });
+      });
+      const chips = document.getElementById('file-chips');
+      chips.innerHTML = attachedFiles.map(f => `
+        <span class="px-2.5 py-1 rounded-lg bg-slate-800 text-xs text-cyan-300 border border-slate-700">${f.name}</span>
+      `).join('');
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

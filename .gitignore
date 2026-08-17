@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+.env.local
+
+# Local model weights (huge files, don't push)
+*.bin
+*.safetensors
+*.pt
+*.ckpt
+*.gguf
+models/
+ai-research/checkpoints/
+
+# Database & data files (regenerated on start)
+backend/data/
+*.db
+*.sqlite
+
+# Logs
+*.log
+logs/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+.npm/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# HuggingFace cache (huge)
+.cache/
+
+# Scratch files
+scratch/
